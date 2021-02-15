@@ -1,0 +1,97 @@
+singleCampaign:
+  handler: src/campaigns/campaigns.getSingle
+  events:
+    - http:
+        path: /campaigns/id/{id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+allCampaigns:
+  handler: src/campaigns/campaigns.listAll
+  events:
+    - http:
+        path: /campaigns
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+createCampaign:
+  handler: src/campaigns/campaigns.create
+  events:
+    - http:
+        path: /campaigns
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+updateCampaign:
+  handler: src/campaigns/campaigns.update
+  events:
+    - http:
+        path: /campaigns
+        method: PATCH
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+deleteCampaign:
+  handler: src/campaigns/campaigns.delete
+  events:
+    - http:
+        path: /campaigns/id/{id}
+        method: DELETE
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+campaignChannel:
+  handler: src/campaigns/channel.get
+  events:
+    - http:
+        path: /campaigns/channel/{channel}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+campaignGoogleModifiers:
+  handler: src/campaigns/googlemodifiers.get
+  events:
+    - http:
+        path: /campaigns/googlemodifers
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW

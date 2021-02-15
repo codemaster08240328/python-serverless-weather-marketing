@@ -1,0 +1,27 @@
+getPermission:
+  handler: src/permissions/permissions.getPerm
+  events:
+    - http:
+        path: /permissions
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+addPermission:
+  handler: src/permissions/permissions.addPerm
+  events:
+    - http:
+        path: /permissions
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW

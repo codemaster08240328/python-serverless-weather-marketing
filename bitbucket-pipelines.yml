@@ -1,0 +1,144 @@
+image: node:12.10.0-alpine
+
+pipelines:
+  branches:
+    dev:
+      - step:
+          name: Deploy to dev
+          caches:
+            - node
+          script:
+            - apk add python3
+            - apk add build-base # alpine gcc install
+            ## alpine dev tools for python3
+            - apk add python3-dev
+            - apk add libffi-dev
+            - apk add openssl-dev
+
+            - npm install -g serverless@2.2.0
+            - npm install
+            - pip3 install -r requirements.txt
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
+            - serverless deploy --stage dev
+
+      - step:
+          name: Build and Deploy Split Order Image to ECR.
+          caches:
+            - pip
+          script:
+            - docker --version
+            - apk add python3
+            - pip3 install awscli
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            - cd src/orders/image
+            - IMAGE="453299555282.dkr.ecr.us-east-1.amazonaws.com/split-order-file"
+            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
+            - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+            - docker build -t $IMAGE:$TAG .
+            - docker push $IMAGE:$TAG
+          trigger: manual
+          services:
+            - docker
+
+    staging:
+      - step:
+          name: Deploy to staging
+          caches:
+            - node
+          script:
+            - apk add python3
+            - apk add build-base
+            - apk add python3-dev
+            - apk add libffi-dev
+            - apk add openssl-dev
+
+            - npm install -g serverless@2.2.0
+            - npm install
+            - serverless config credentials --provider aws --key $STAGING_AWS_ACCESS_KEY_ID --secret $STAGING_AWS_SECRET_ACCESS_KEY
+            - serverless deploy
+
+      - step:
+          name: Build and Deploy Split Order Image to ECR.
+          caches:
+            - pip
+          script:
+            - docker --version
+            - apk add python3
+            - pip3 install awscli
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            - cd src/orders/image
+            - IMAGE="453299555282.dkr.ecr.us-east-1.amazonaws.com/split-order-file"
+            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
+            - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+            - docker build -t $IMAGE:$TAG .
+            - docker push $IMAGE:$TAG
+          trigger: manual
+          services:
+            - docker
+
+    master:
+      - step:
+          name: Deploy to prod
+          caches:
+            - node
+          script:
+            - apk add python3
+            - apk add build-base # alpine gcc install
+            ## alpine dev tools for python3
+            - apk add python3-dev
+            - apk add libffi-dev
+            - apk add openssl-dev
+
+            - npm install -g serverless@2.2.0
+            - npm install
+            - pip3 install -r requirements.txt
+            - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
+            - serverless deploy --stage prod
+
+      - step:
+          name: Build and Deploy Split Order Image to ECR.
+          caches:
+            - pip
+          script:
+            - docker --version
+            - apk add python3
+            - pip3 install awscli
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            - cd src/orders/image
+            - IMAGE="453299555282.dkr.ecr.us-east-1.amazonaws.com/split-order-file"
+            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
+            - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+            - docker build -t $IMAGE:$TAG .
+            - docker push $IMAGE:$TAG
+          trigger: manual
+          services:
+            - docker
+
+    local:
+      - step:
+          name: Test stage
+          script:
+            - node -v
+
+      - step:
+          name: Deploy to docker registry
+          caches:
+            - pip
+          script:
+            - docker --version
+            - apk add python3
+            - pip3 install awscli
+            - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            - cd src/orders/image
+            - IMAGE="453299555282.dkr.ecr.us-east-1.amazonaws.com/split-order-file"
+            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
+            - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+            - docker build -t $IMAGE:$TAG .
+            - docker push $IMAGE:$TAG
+          trigger: manual
+          services:
+            - docker

@@ -1,0 +1,202 @@
+hello:
+  handler: src/audiences/handler.hello
+  events:
+    - http:
+        path: app
+        method: post
+
+audienceOptions:
+  handler: src/audiences/options.handler
+  events:
+    - http:
+        path: /audience_options
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+universeCalc:
+  handler: src/audiences/universeCalc.handler
+  events:
+    - http:
+        path: /audience_universe
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+createSql:
+  handler: src/audiences/audienceSql.create
+  events:
+    - http:
+        path: /audience_universe/control_size
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+listSql:
+  handler: src/audiences/audienceSql.listAll
+  events:
+    - http:
+        path: /audience_universe/id/{id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+validateSql:
+  handler: src/audiences/audienceSql.validate
+  events:
+    - http:
+        path: /audience_universe/validate
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+audienceGetSingle:
+  handler: src/audiences/audiences.getSingle
+  events:
+    - http:
+        path: /audiences/id/{id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+listAudience:
+  handler: src/audiences/audiences.listAll
+  events:
+    - http:
+        path: /audiences
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+createAudience:
+  handler: src/audiences/audiences.create
+  events:
+    - http:
+        path: /audiences
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+deleteAudience:
+  handler: src/audiences/audiences.delete
+  events:
+    - http:
+        path: /audiences
+        method: DELETE
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+createDelivery:
+  handler: src/audiences/deliveries.create
+  events:
+    - http:
+        path: /audiences/delivery
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+deleteDelivery:
+  handler: src/audiences/deliveries.delete
+  events:
+    - http:
+        path: /audiences/delivery
+        method: DELETE
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+listDeliveries:
+  handler: src/audiences/deliveries.listAll
+  events:
+    - http:
+        path: /audiences/delivery/id/{id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+versionAudience:
+  handler: src/audiences/audiences.getVersion
+  events:
+    - http:
+        path: /audiences/versions/{id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+measure:
+  handler: src/audiences/audiences.createMeasure
+  events:
+    - http:
+        path: /audiences/measure
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW

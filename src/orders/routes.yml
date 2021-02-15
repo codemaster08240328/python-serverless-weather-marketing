@@ -1,0 +1,50 @@
+createOrders:
+  handler: src/orders/orders.create
+  events:
+    - http:
+        path: /orders
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          # arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+importOrders:
+  handler: src/orders/orderImport.create
+  events:
+    - http:
+        path: /order_file
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          # arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+patchOrders:
+  handler: src/orders/orders.patch
+  events:
+    - http:
+        path: /order/{order_id}
+        method: PATCH
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          # arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+triggeredOrderByS3:
+  handler: src/orders/s3trigger.handler
+  memorySize: 3008
+  events:
+    - s3:
+        bucket: notus-user-file-uploads-${self:provider.stage}
+        events:
+          - s3:ObjectCreated:*
+        rules:
+          - suffix: .json
+        existing: true

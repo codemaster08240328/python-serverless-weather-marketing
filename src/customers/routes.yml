@@ -1,0 +1,41 @@
+createCustomer:
+  handler: src/customers/customers.create
+  events:
+    - http:
+        path: /customers
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+getSingleCustomer:
+  handler: src/customers/customers.get_single
+  events:
+    - http:
+        path: /customers/{customer_id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+updateCustomer:
+  handler: src/customers/customers.put
+  events:
+    - http:
+        path: /customers/{customer_id}
+        method: PUT
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW

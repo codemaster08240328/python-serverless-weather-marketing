@@ -1,0 +1,41 @@
+createProducts:
+  handler: src/products/products.create
+  events:
+    - http:
+        path: /products
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+getSingleProduct:
+  handler: src/products/products.get_single
+  events:
+    - http:
+        path: /product/{product_id}
+        method: GET
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW
+
+updateProduct:
+  handler: src/products/products.put
+  events:
+    - http:
+        path: /product/{product_id}
+        method: PUT
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+        # authorizer:
+        #   arn: arn:aws:cognito-idp:us-east-1:453299555282:userpool/us-east-1_RMpcwKhiW

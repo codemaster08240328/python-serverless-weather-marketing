@@ -1,0 +1,34 @@
+({
+  "orderID": "20190225-b23",
+  "email": "jsmith@example.com",
+  "properties": { "a_num": 1 },
+  "purchaseDate": "2019-01-25T00:00:00+0000",
+  "items": [
+    {
+      "productID": "123id",
+      "description": "Blue shirt",
+      "sku": "123SKU",
+      "category": "Shirts",
+      "name": "Blue button down",
+      "qty": 1,
+      "itemPrice": 49.0
+    }
+  ]
+},
+{
+  "orderID": "51190447-b10",
+  "email": "mjoy@example.com",
+  "properties": { "a_num": 1 },
+  "purchaseDate": "2019-02-12T00:00:00+0000",
+  "items": [
+    {
+      "productID": "456id",
+      "description": "Khaki pants",
+      "sku": "456SKU",
+      "category": "Pants",
+      "name": "Fashionable khaki pants",
+      "qty": 1,
+      "itemPrice": 29.99
+    }
+  ]
+})

@@ -1,0 +1,17 @@
+orderToElastic:
+  handler: src/elastics/orderToElastic.handler
+  events:
+    - stream:
+        type: dynamodb
+        batchSize: 10
+        enabled: true
+        arn: { "Fn::GetAtt": ["orderTable", "StreamArn"] }
+
+customerToElastic:
+  handler: src/elastics/customerToElastic.handler
+  events:
+    - stream:
+        type: dynamodb
+        batchSize: 10
+        enabled: true
+        arn: { "Fn::GetAtt": ["customerTable", "StreamArn"] }

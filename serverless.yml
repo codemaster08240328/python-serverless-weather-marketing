@@ -1,0 +1,151 @@
+service: notus-api
+
+frameworkVersion: "2.2"
+
+custom:
+  terraform:
+    AWS_ACCOUNT_ID: ${ssm:/account/id~true}
+    ECS_VPC_ID: ${ssm:/vpc/notus_ecs/id~true}
+    ECS_PRIVATE_SUBNET_1_ID: ${ssm:/vpc/subnet/ecs_private_1/id~true}
+    LAYER_PANDAS_NUMPY: ${ssm:/lambda/layer/pandas_numpy/arn~true}
+  sesTemplatesDisableAutoDeploy: true
+  sesTemplatesRegion: ${self:provider.region}
+  sesTemplatesConfigFile: "src/ses-email-templates/index.js"
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  timeout: 30
+  memorySize: 512
+  versionFunctions: false
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "rds-db:connect"
+      Resource:
+        - "arn:aws:rds-db:us-east-1:453299555282:dbuser:db-WPG5IITGBG6RLVXVMBE3DSJHVE/lambda_api_iam"
+        - "arn:aws:rds-db:us-east-1:453299555282:dbuser:cluster-EDCFDNPBU7LEUMQHLMEFG345SM/lambda_api_iam"
+
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "lambda:*"
+      Resource:
+        - "arn:aws:lambda:us-east-1:453299555282:function:market-data-save_forecast"
+        - "arn:aws:lambda:us-east-1:453299555282:function:audience-run_sql"
+        - "arn:aws:lambda:us-east-1:453299555282:function:wx-api-recap"
+
+    - Effect: "Allow"
+      Action:
+        - "secretsmanager:*"
+      Resource:
+        - "arn:aws:secretsmanager:us-east-1:453299555282:secret:ec2-recap-tUeBD6"
+
+    - Effect: "Allow"
+      Action:
+        - "cognito-sync:*"
+        - "cognito-identity:*"
+        - "cognito-idp:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "secretsmanager:GetSecretValue"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "athena:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "glue:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "ecs:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "iam:PassRole"
+      Resource:
+        - "arn:aws:iam::453299555282:role/ecsTaskExecutionRole"
+
+    - Effect: "Allow"
+      Action:
+        - "ses:*"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "SNS:Publish"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "es:ESHttpPost"
+        - "es:ESHttpPut"
+        - "es:ESHttpDelete"
+      Resource:
+        - "*"
+
+    - Effect: "Allow"
+      Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:PutLogEvents"
+      Resource:
+        - "*"
+
+plugins:
+  - serverless-plugin-split-stacks
+  - serverless-offline
+  - serverless-offline-scheduler
+  - "@haftahave/serverless-ses-template"
+
+functions:
+  - ${file(./src/audiences/routes.yml)}
+  - ${file(./src/campaigns/routes.yml)}
+  - ${file(./src/forecast/routes.yml)}
+  - ${file(./src/options/routes.yml)}
+  - ${file(./src/partners/routes.yml)}
+  - ${file(./src/permissions/routes.yml)}
+  - ${file(./src/weather/routes.yml)}
+  - ${file(./src/query/routes.yml)}
+  - ${file(./src/cron/routes.yml)}
+  - ${file(./src/orders/routes.yml)}
+  - ${file(./src/elastics/routes.yml)}
+  - ${file(./src/products/routes.yml)}
+  - ${file(./src/customers/routes.yml)}
+
+resources:
+  - ${file(cloudformation.yml)}
+
+package:
+  exclude:
+    - node_modules/**
+    - venv/**
+    - util/populate_tables.py
+    - util/geo.csv

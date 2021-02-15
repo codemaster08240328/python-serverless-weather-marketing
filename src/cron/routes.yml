@@ -1,0 +1,30 @@
+cronForecast:
+  handler: src/cron/forecast.run
+  events:
+    - schedule: rate(1 hour)
+  layers:
+    - ${self:custom.terraform.LAYER_PANDAS_NUMPY}
+
+cronFbCampaignUiInsert:
+  handler: src/cron/fb_campaign_populate.insert_fb_campaigns
+  events:
+    - schedule: rate(1 hour)
+
+cronSaveMarketMetrics:
+  handler: src/cron/save_market_metrics.save_metrics
+  events:
+    - schedule: cron(0 23 * * ? *)
+  layers:
+    - ${self:custom.terraform.LAYER_PANDAS_NUMPY}
+
+cronFbSendBudget:
+  handler: src/cron/fb_budget_control.send_fb_budget
+  events:
+    - schedule: cron(0 9 * * ? *)
+
+cronEmailService:
+  handler: src/cron/emailService.run
+  # events:
+  #   - schedule: rate(1 min)
+  layers:
+    - ${self:custom.terraform.LAYER_PANDAS_NUMPY}

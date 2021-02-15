@@ -1,0 +1,240 @@
+Resources:
+
+  audienceDeployTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: assets
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: asset
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: asset
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: assetIndex
+          KeySchema:
+            - AttributeName: asset
+              KeyType: HASH
+          Projection:
+            ProjectionType: "ALL"
+      BillingMode: PAY_PER_REQUEST
+
+  orderTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: order
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: customer_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: customerIdIndex
+          KeySchema:
+            - AttributeName: customer_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: "ALL"
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  customerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: customer
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  productTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: product
+      AttributeDefinitions:
+        - AttributeName: product_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: product_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  storeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: store
+      AttributeDefinitions:
+        - AttributeName: store_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: store_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  geoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: geo
+      AttributeDefinitions:
+        - AttributeName: postal_code
+          AttributeType: S
+      KeySchema:
+        - AttributeName: postal_code
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: notus_user_pool
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: admin_only
+            Priority: 1
+      MfaConfiguration: 'OFF'
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: False
+      Schema:
+        - AttributeDataType: String
+          Name: 'email'
+          Required: True
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId:
+        Ref: CognitoUserPool
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: False
+      PreventUserExistenceErrors: LEGACY
+      RefreshTokenValidity: 1
+      IdTokenValidity: 1
+      AccessTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: notus_identity_pool
+      AllowUnauthenticatedIdentities: False
+      CognitoIdentityProviders:
+        - ClientId:
+            Ref: CognitoUserPoolClient
+          ProviderName:
+            Fn::GetAtt: [CognitoUserPool, ProviderName]
+
+  SplitOrderTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: split-order
+      TaskRoleArn: arn:aws:iam::${self:custom.terraform.AWS_ACCOUNT_ID}:role/EcsTaskExecution
+      NetworkMode: awsvpc
+      ExecutionRoleArn: arn:aws:iam::${self:custom.terraform.AWS_ACCOUNT_ID}:role/EcsTaskExecution
+      RequiresCompatibilities:
+        - FARGATE
+      Memory: 30GB
+      Cpu: 4 vCPU
+      ContainerDefinitions:
+        - Name: split-order-file
+          Image: ${self:custom.terraform.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/split-order-file
+          LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: /ecs/split-order
+                awslogs-region: us-east-1
+                awslogs-stream-prefix: ecs
+
+  SplitorderLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/split-order
+
+  ApiGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: CognitoUserPool
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      ProviderARNs:
+        - Fn::GetAtt:
+            - CognitoUserPool
+            - Arn
+
+  EcsTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EcsTaskExecution
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - ecs-tasks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  EcsTaskRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EcsTaskPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+            - secretsmanager:GetSecretValue
+            - s3:*
+            - dynamodb:*
+            - athena:*
+            - glue:*
+            - ecs:*
+            - ecr:*
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:CreateLogGroup
+            - logs:DescribeLogGroups
+            - logs:FilterLogEvents
+            Effect: Allow
+            Resource: "*"
+      Roles: [!Ref EcsTaskRole]
+
+  EcsNotusSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'General ECS Access'
+      GroupName: EcsNotusSg
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+      VpcId: ${self:custom.terraform.ECS_VPC_ID}

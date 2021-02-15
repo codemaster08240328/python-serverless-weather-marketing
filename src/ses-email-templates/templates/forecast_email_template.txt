@@ -1,0 +1,2 @@
+Your barchart here:
+  {{bar_chart_html_1}}
